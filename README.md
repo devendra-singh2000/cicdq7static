@@ -9,6 +9,7 @@
 | AWS | >=4.0 |
 | Ubuntu | >=20.04 |
 | Git | >= 2.25 |
+
 ##  Infrastructure Setup 
 | Number | Name |
 | ------ | ------|
@@ -22,6 +23,8 @@
 ## Providers
 AWS
 
+#  Setup the build environment
+- For our build environment we’ll launch an Amazon EC2 instance using the Amazon Linux AMI and install and configure the required packages. Make sure that the security group we select for our instance allows traffic on ports TCP/22, TCP/80 and TCP/8080.
 
 ## Modules
 | Name | Description |
@@ -44,5 +47,67 @@ AWS
 | [aws_ecs_service](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/mq_broker) | resource |
 | [aws_internet_gateway](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/mq_broker) | resource |
 | [aws_route_table](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/mq_broker) | resource |
+
+
+#  Install and configure Jenkins, Docker and Nginx
+- Connect to instance using private key and switch to the root user. First, let’s update the repositories and install Docker, Nginx and Git. 
+```sh
+    1. yum update -y
+    2. yum install -y docker nginx git
+```
+-  To install Jenkins on Amazon Linux, we need to add the Jenkins repository and install Jenkins from there. 
+```sh
+    1. wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+    2. rpm --import http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key
+    3. yum install jenkins
+```
+- We’ll be using Jenkins to build our Docker images, so we need to add the jenkins user to the docker group. A reboot may be required for the changes to take effect.
+```sh    
+    usermod -a -G docker jenkins
+```
+-  Start the Docker, Jenkins and Nginx services and make sure they will be running after a reboot: 
+
+
+#  Configure the Jenkins build
+---
+ On the Jenkins dashboard, click on New Item, select the pipeline project job, add a name for the job, and click OK. Configure the Jenkins job:
+```sh
+Under GitHub Project, add the path of  GitHub repository – e.g. https://github.com/devendra-singh2000/devops-automation.git. 
+```
+```sh
+Select pipeline script from SCM
+```
+
+
+##  Deployment
+First initialise the backend, and install the aws plugin and prepare terraform.:
+
+```sh
+terraform init
+```
+
+The terraform plan command evaluates a Terraform configuration to determine the desired state of all the resources it declares:
+
+```sh
+terraform plan
+```
+The terraform apply command executes the actions proposed in a terraform plan
+```sh
+terraform apply
+```
+
+The terraform destroy command terminates resources managed by our Terraform project.
+```sh
+terraform destroy
+```
+
+
+## Author
+----
+Module managed by [Devendra Singh](https://github.com/devendra-singh2000)
+
+
+
+
 
 
